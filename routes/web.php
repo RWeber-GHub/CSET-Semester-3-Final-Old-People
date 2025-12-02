@@ -1,35 +1,60 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Authentication_controller;
 use App\Http\Controllers\PrescriptionsController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\New_Roster_Controller;
+use App\Http\Controllers\AuthController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
+// Home
 Route::get('/', function () {
     return view('Home');
 });
 
-Route::get('/patient_home',  [PatientsController::class, 'index']);
+// Patient Home
+Route::get('/patient_home', [PatientsController::class, 'index']);
 
-Route::get('/signin', function () {
-    return view('SignIn');
-});
 
+// -------- Authentication Routes --------
+
+// Show login page
+Route::get('/login', [Authentication_controller::class, 'showLoginForm'])->name('login');
+
+// Handle login
+Route::post('/login', [Authentication_controller::class, 'login'])->name('login.submit');
+
+// Logout
+Route::get('/logout', [Authentication_controller::class, 'logout'])->name('logout');
+
+// Show register page
+Route::get('/register', [Authentication_controller::class, 'showRegisterForm'])->name('register');
+
+// Handle register
+Route::post('/register', [Authentication_controller::class, 'register'])->name('register.submit');
+
+
+// -------- Admin View (ISeeAll Middleware) --------
+
+Route::get('/admin/users', [Authentication_controller::class, 'adminUserView'])
+    ->middleware('ISeeAll')
+    ->name('admin.users');
+
+
+// Admin COntrols
+Route::post('/admin/users/approve/{id}', [Authentication_Controller::class, 'approveUser'])
+    ->middleware('ISeeAll');
+
+Route::delete('/admin/users/delete/{id}', [Authentication_Controller::class, 'deleteUser'])
+    ->middleware('ISeeAll');
+
+
+// -------- Roster --------
 
 Route::get('/roster', [RosterController::class, 'index'])->name('roster.index');
 
 Route::get('/new-roster', [New_Roster_Controller::class, 'index'])->name('roster.new');
 
 Route::post('/new-roster', [New_Roster_Controller::class, 'store'])->name('roster.store');
+

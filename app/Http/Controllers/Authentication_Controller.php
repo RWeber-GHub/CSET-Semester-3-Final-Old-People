@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class Authentication_controller extends Controller
 {
@@ -19,92 +18,104 @@ class Authentication_controller extends Controller
 
     // Handle login
     public function login(Request $request)
-{
-    $request->validate([
-        'Email' => 'required|email',
-        'Password' => 'required'
-    ]);
-
-    $user = Users::where('Email', $request->Email)->first();
-
-    if (!$user || !Hash::check($request->Password, $user->Password)) {
-        return back()->withErrors(['Invalid email or password']);
-    }
-
-    // Save session
-    session([
-        'userid' => $user->UserID,
-        'roleid' => $user->RoleID,
-        'firstname' => $user->First_Name
-    ]);
-
-    // Role-based redirects
-    switch ($user->RoleID) {
-        case 1: return redirect('/admin/dashboard');
-        case 2: return redirect('/doctor/home');
-        case 3: return redirect('/patient_home');
-        case 4: return redirect('/caregiver/home');
-        case 5: return redirect('/family/home');
-        default: return redirect('/');
-    }
-}
-
-
-    // Role-based redirect
-    private function redirectBasedOnRole($roleId)
     {
-        switch ($roleId) {
-            case 1:
-                return redirect('/admin_home');
-            case 2:
-                return redirect('/doctor_home');
-            case 3:
-                return redirect('/patient_home');
-            case 4:
-                return redirect('/caregiver_home');
-            case 5:
-                return redirect('/family_home');
-            default:
-                return redirect('/');
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        $user = Users::where('Email', $data['email'])->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'No account found with that email.']);
+        }
+
+        // Ensure account is approved
+        if ((int)$user->Approved !== 1) {
+            return back()->withErrors(['email' => 'Account not approved yet.']);
+        }
+
+        if (!Hash::check($data['password'], $user->Password)) {
+            return back()->withErrors(['password' => 'Invalid password.']);
+        }
+
+        // Save session values
+        session([
+            'userid' => $user->UserID,
+            'roleid' => $user->RoleID,
+            'firstname' => $user->First_Name,
+            'email' => $user->Email
+        ]);
+
+        // Role-based redirects (placeholder paths)
+        switch ((int)$user->RoleID) {
+            case 1: return redirect('/admin_home');
+            case 2: return redirect('/doctor_home');
+            case 3: return redirect('/patient_home');
+            case 4: return redirect('/caregiver_home');
+            case 5: return redirect('/family_home');
+            default: return redirect('/');
         }
     }
 
-public function showRegisterForm()
-{
-    return view('register');
-}
+    // Show register page
+    public function showRegisterForm()
+    {
+        return view('register');
+    }
+
+    // Handle register
     public function register(Request $request)
-{
-    $validated = $request->validate([
-        'First_Name' => 'required',
-        'Last_Name' => 'required',
-        'Email' => 'required|email|unique:users,Email',
-        'Phone' => 'required',
-        'Password' => 'required|min(4)',
-        'RoleID' => 'required|integer'
-    ]);
+    {
+        $data = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,Email',
+            'phone'      => 'nullable|string|max:30',
+            'password'   => 'required|string|min:4',
+            'roleid'     => 'required|integer|in:1,2,3,4,5',
+            'date_of_birth' => 'nullable|date',
+            'family_code' => 'nullable|string|max:64',
+            'family_code_family' => 'nullable|string|max:64',
+            'emergency_contact' => 'nullable|string|max:64',
+            'emergency_contact_relation' => 'nullable|string|max:64',
+        ]);
 
-    $user = new Users();
+        // If patient and no family_code provided, generate a family code
+        $familyCode = null;
+        if ((int)$data['roleid'] === 3) {
+            $familyCode = $data['family_code'] ?? 'FAM' . rand(100, 999);
+        } elseif ((int)$data['roleid'] === 5) {
+            // family member: prefer the family_code_family field if provided
+            $familyCode = $data['family_code_family'] ?? $data['family_code'] ?? null;
+        } else {
+            $familyCode = $data['family_code'] ?? null;
+        }
 
-    $user->RoleID = $request->RoleID;
-    $user->First_Name = $request->First_Name;
-    $user->Last_Name = $request->Last_Name;
-    $user->Email = $request->Email;
-    $user->Phone = $request->Phone;
-    $user->Password = Hash::make($request->Password);
+        // Create user and map to DB columns
+        $user = new Users();
+        $user->RoleID = (int)$data['roleid'];
+        $user->First_Name = $data['first_name'];
+        $user->Last_Name = $data['last_name'];
+        $user->Email = $data['email'];
+        $user->Phone = $data['phone'] ?? null;
+        $user->Password = Hash::make($data['password']);
+        $user->Date_of_Birth = $data['date_of_birth'] ?? null;
+        $user->Family_Code = $familyCode;
+        $user->Emergency_Contact = $data['emergency_contact'] ?? null;
+        $user->Emergency_Contact_Relation = $data['emergency_contact_relation'] ?? null;
 
-    $user->Date_of_Birth = $request->Date_of_Birth;
-    $user->Family_Code = $request->Family_Code;
-    $user->Emergency_Contact = $request->Emergency_Contact;
-    $user->Emergency_Contact_Relation = $request->Emergency_Contact_Relation;
+        // default approved = 0 unless admin sets it
+        $user->Approved = 0;
 
-    // default approved = 0 unless admin approves
-    $user->Approved = 0;
+        // optional: set a User_Group; here we set same as Family_Code if present
+        $user->User_Group = $familyCode ?? null;
 
-    $user->save();
+        $user->save();
 
-    return redirect('/login')->with('success', 'Account created! Wait for admin approval.');
-}
+        return redirect('/login')->with('success', 'Account created! Wait for admin approval.');
+    }
+
     // Logout
     public function logout()
     {
@@ -115,29 +126,21 @@ public function showRegisterForm()
     // Admin-only user approval page
     public function adminUserView()
     {
-        // Retrieve all unapproved users
         $pendingUsers = DB::table('users')->where('Approved', 0)->get();
-
-        // Placeholder for now
         return view('AdminUsers', ['pendingUsers' => $pendingUsers]);
     }
 
-
-
+    // Approve user
     public function approveUser($id)
     {
-    DB::table('users')->where('UserID', $id)->update(['Approved' => 1]);
-
-    return back()->with('success', 'User has been approved!');
+        DB::table('users')->where('UserID', $id)->update(['Approved' => 1]);
+        return back()->with('success', 'User has been approved!');
     }
 
+    // Delete/Reject user
     public function deleteUser($id)
     {
-    DB::table('users')->where('UserID', $id)->delete();
-
-    return back()->with('success', 'User removed.');
+        DB::table('users')->where('UserID', $id)->delete();
+        return back()->with('success', 'User removed.');
     }
-
 }
-
-

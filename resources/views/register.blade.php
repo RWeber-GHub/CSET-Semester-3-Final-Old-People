@@ -3,103 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
-    @vite('resources/css/app.css')
+    <link rel="stylesheet" href="{{ asset('resources/css/towerhealth.css') }}">
 </head>
-<body class="bg-gray-100">
+<body>
 
-<div class="min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-lg">
+<div class="site-nav">
+    <div class="brand">TOWER HEALTH - APEX</div>
+    <div>
+        <a href="/">Home</a>
+        <a href="/login" class="btn">Login</a>
+    </div>
+</div>
 
-        <h2 class="text-2xl font-bold text-center mb-6">Create an Account</h2>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h2>Create an Account</h2>
 
-        {{-- Display Errors --}}
         @if ($errors->any())
-            <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-                <ul class="list-disc ml-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+            <div class="alert error">
+                <ul style="margin:0;padding-left:18px;">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register.submit') }}">
+        @if(session('success'))
+            <div class="alert success">{{ session('success') }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('register.submit') }}" id="registerForm">
             @csrf
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="form-grid">
 
                 <div>
-                    <label class="font-medium">First Name</label>
-                    <input type="text" name="First_Name" class="w-full p-2 border rounded" required>
+                    <label for="first_name">First Name</label>
+                    <input id="first_name" name="first_name" type="text" value="{{ old('first_name') }}" required>
                 </div>
 
                 <div>
-                    <label class="font-medium">Last Name</label>
-                    <input type="text" name="Last_Name" class="w-full p-2 border rounded" required>
+                    <label for="last_name">Last Name</label>
+                    <input id="last_name" name="last_name" type="text" value="{{ old('last_name') }}" required>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Email</label>
-                    <input type="email" name="Email" class="w-full p-2 border rounded" required>
+                <div class="full">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" value="{{ old('email') }}" required>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Phone</label>
-                    <input type="text" name="Phone" class="w-full p-2 border rounded" required>
+                <div class="full">
+                    <label for="phone">Phone</label>
+                    <input id="phone" name="phone" type="text" value="{{ old('phone') }}" required>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Password</label>
-                    <input type="password" name="Password" class="w-full p-2 border rounded" required>
+                <div class="full">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" required>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Role</label>
-                    <select name="RoleID" class="w-full p-2 border rounded" required>
+                <div class="full">
+                    <label for="roleid">Role</label>
+                    <select id="roleid" name="roleid" required onchange="toggleRoleFields()">
                         <option value="">Select Role</option>
-                        <option value="1">Admin</option>
-                        <option value="2">Doctor</option>
-                        <option value="3">Patient</option>
-                        <option value="4">Caregiver</option>
-                        <option value="5">Family Member</option>
+                        <option value="1" {{ old('roleid') == '1' ? 'selected' : '' }}>Admin</option>
+                        <option value="2" {{ old('roleid') == '2' ? 'selected' : '' }}>Doctor</option>
+                        <option value="3" {{ old('roleid') == '3' ? 'selected' : '' }}>Patient</option>
+                        <option value="4" {{ old('roleid') == '4' ? 'selected' : '' }}>Caregiver</option>
+                        <option value="5" {{ old('roleid') == '5' ? 'selected' : '' }}>Family Member</option>
                     </select>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Date of Birth</label>
-                    <input type="date" name="Date_of_Birth" class="w-full p-2 border rounded">
+                <!-- Patient only -->
+                <div id="patientSection" class="full" style="display:none;">
+                    <label class="font-medium">Patient Details</label>
+
+                    <div style="margin-top:10px;">
+                        <label for="date_of_birth">Date of Birth</label>
+                        <input id="date_of_birth" name="date_of_birth" type="date" value="{{ old('date_of_birth') }}">
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <label for="family_code">Family Code (optional)</label>
+                        <input id="family_code" name="family_code" type="text" value="{{ old('family_code') }}">
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <label for="emergency_contact">Emergency Contact</label>
+                        <input id="emergency_contact" name="emergency_contact" type="text" value="{{ old('emergency_contact') }}">
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <label for="emergency_contact_relation">Emergency Contact Relation</label>
+                        <input id="emergency_contact_relation" name="emergency_contact_relation" type="text" value="{{ old('emergency_contact_relation') }}">
+                    </div>
                 </div>
 
-                <div class="col-span-2">
-                    <label class="font-medium">Family Code (optional)</label>
-                    <input type="text" name="Family_Code" class="w-full p-2 border rounded">
-                </div>
-
-                <div class="col-span-2">
-                    <label class="font-medium">Emergency Contact</label>
-                    <input type="text" name="Emergency_Contact" class="w-full p-2 border rounded">
-                </div>
-
-                <div class="col-span-2">
-                    <label class="font-medium">Emergency Contact Relation</label>
-                    <input type="text" name="Emergency_Contact_Relation" class="w-full p-2 border rounded">
+                <!-- Family Member only -->
+                <div id="familySection" class="full" style="display:none;">
+                    <label for="family_code_family">Family Code (match patient)</label>
+                    <input id="family_code_family" name="family_code_family" type="text" value="{{ old('family_code_family') }}">
                 </div>
 
             </div>
 
-            <button
-                class="w-full mt-5 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
-                Create Account
-            </button>
+            <div style="margin-top:18px;">
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <a href="/login" style="margin-left:12px;" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
-
-        <p class="text-center text-sm mt-4">
-            Already have an account?
-            <a href="/login" class="text-blue-600 hover:underline">Login</a>
-        </p>
-
     </div>
 </div>
+
+<script>
+    function toggleRoleFields() {
+        const role = document.getElementById('roleid').value;
+        const patientSection = document.getElementById('patientSection');
+        const familySection = document.getElementById('familySection');
+
+        patientSection.style.display = (role === '3') ? 'block' : 'none';
+        familySection.style.display = (role === '5') ? 'block' : 'none';
+    }
+
+    // initial on load (for old values)
+    document.addEventListener('DOMContentLoaded', function(){
+        toggleRoleFields();
+    });
+</script>
 
 </body>
 </html>

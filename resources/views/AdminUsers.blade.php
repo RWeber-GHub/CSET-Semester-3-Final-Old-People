@@ -1,97 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Pending User Approvals</title>
-    @vite('resources/css/app.css')
+    <title>Admin - Pending Users</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 6px 12px; cursor: pointer; }
+        .approve-btn { background-color: #4CAF50; color: white; border: none; }
+        .delete-btn { background-color: #e74c3c; color: white; border: none; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body>
 
-<div class="container mx-auto mt-10">
+<h2>Pending User Approvals</h2>
 
-    <h1 class="text-3xl font-bold mb-6 text-center">Pending User Approvals</h1>
+@if(session('success'))
+    <div style="color: green;">{{ session('success') }}</div>
+@endif
 
-    @if (session('success'))
-        <div class="bg-green-100 border border-green-300 text-green-700 p-3 rounded mb-5">
-            {{ session('success') }}
-        </div>
-    @endif
+@if($pendingUsers->isEmpty())
+    <p>No pending users.</p>
+@else
+    <table>
+        <tr>
+            <th>UserID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>RoleID</th>
+            <th>Actions</th>
+        </tr>
 
-    @if ($pendingUsers->isEmpty())
-        <div class="bg-white p-6 rounded shadow text-center">
-            <p class="text-gray-600">No pending users — everything is up to date!</p>
-        </div>
-    @else
-        <div class="bg-white rounded shadow overflow-hidden">
+        @foreach($pendingUsers as $user)
+        <tr>
+            <td>{{ $user->UserID }}</td>
+            <td>{{ $user->First_Name }} {{ $user->Last_Name }}</td>
+            <td>{{ $user->Email }}</td>
+            <td>{{ $user->RoleID }}</td>
+            <td>
 
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-200 text-left">
-                        <th class="p-3">Name</th>
-                        <th class="p-3">Email</th>
-                        <th class="p-3">Role</th>
-                        <th class="p-3">Registered</th>
-                        <th class="p-3 text-center">Actions</th>
-                    </tr>
-                </thead>
+                {{-- Approve Form --}}
+                <form action="{{ route('admin.users.approve', $user->UserID) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button class="approve-btn">Approve</button>
+                </form>
 
-                <tbody>
-                    @foreach ($pendingUsers as $user)
-                        <tr class="border-b hover:bg-gray-50">
+                {{-- Delete Form --}}
+                <form action="{{ route('admin.users.delete', $user->UserID) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button class="delete-btn">Delete</button>
+                </form>
 
-                            <td class="p-3">
-                                {{ $user->First_Name }} {{ $user->Last_Name }}
-                            </td>
+            </td>
+        </tr>
+        @endforeach
 
-                            <td class="p-3">{{ $user->Email }}</td>
-
-                            <td class="p-3">
-                                @php
-                                    $roles = [
-                                        1 => 'Admin',
-                                        2 => 'Doctor',
-                                        3 => 'Patient',
-                                        4 => 'Caregiver',
-                                        5 => 'Family Member'
-                                    ];
-                                @endphp
-                                {{ $roles[$user->RoleID] ?? 'Unknown' }}
-                            </td>
-
-                            <td class="p-3">
-                                {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
-                            </td>
-
-                            <td class="p-3 flex gap-2 justify-center">
-
-                                {{-- Approve Button --}}
-                                <form method="POST" action="/admin/users/approve/{{ $user->UserID }}">
-                                    @csrf
-                                    <button class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                                        Approve
-                                    </button>
-                                </form>
-
-                                {{-- Reject/Delete Button --}}
-                                <form method="POST" action="/admin/users/delete/{{ $user->UserID }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                                        Reject
-                                    </button>
-                                </form>
-
-                            </td>
-
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-        </div>
-    @endif
-
-</div>
+    </table>
+@endif
 
 </body>
 </html>

@@ -60,11 +60,7 @@ Route::delete('/admin/users/delete/{id}', [Authentication_controller::class, 'de
 
 // ---------------- Roster ----------------
 
-Route::get('/roster', [RosterController::class, 'index'])
-    ->name('roster.index');
+Route::get('/roster', [RosterController::class, 'index'])->name('roster.index');
 
-Route::get('/new-roster', [New_Roster_Controller::class, 'index'])
-    ->name('roster.new');
-
-Route::post('/new-roster', [New_Roster_Controller::class, 'store'])
-    ->name('roster.store');
+Route::get('/new-roster', [New_Roster_Controller::class, 'index'])->name('roster.new')->middleware('auth','can:manage-roster');
+Route::post('/new-roster', [New_Roster_Controller::class, 'store'])->name('roster.store')->middleware('auth','can:manage-roster');

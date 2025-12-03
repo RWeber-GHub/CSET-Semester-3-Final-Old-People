@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="css/towerhealth.css">
     <title>Admin - Pending Users</title>
     <style>
         body { font-family: Arial; padding: 20px; }

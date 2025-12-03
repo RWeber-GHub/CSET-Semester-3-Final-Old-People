@@ -2,48 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Roster;
+use App\Models\Users;
+use Carbon\Carbon;
 
 class New_Roster_Controller extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $date = $request->query('date', Carbon::today()->toDateString());
+
+        $roster = Roster::query()
+                        ->whereDate('date', $date)
+                        ->with(['supervisor','doctor','cg1','cg2','cg3','cg4'])
+                        ->first();
+
+        $users = Users::orderBy('Last_Name')->get();
+
+        return view('NewRoster', compact('date','roster','users'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        $data = $request->validate([
+            'date' => 'required|date',
+            'supervisor_id' => 'nullable|exists:users,UserID',
+            'doctor_id' => 'nullable|exists:users,UserID',
+            'caregiver1_id' => 'nullable|exists:users,UserID',
+            'caregiver2_id' => 'nullable|exists:users,UserID',
+            'caregiver3_id' => 'nullable|exists:users,UserID',
+            'caregiver4_id' => 'nullable|exists:users,UserID',
+            'patient_group1' => 'nullable|string|max:50',
+            'patient_group2' => 'nullable|string|max:50',
+            'patient_group3' => 'nullable|string|max:50',
+            'patient_group4' => 'nullable|string|max:50',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        Roster::updateOrCreate(
+            ['date' => $data['date']],
+            $data
+        );
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('roster.index', ['date' => $data['date']])
+                         ->with('success', 'Roster saved.');
     }
 }

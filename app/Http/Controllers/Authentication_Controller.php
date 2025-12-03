@@ -73,7 +73,7 @@ class Authentication_controller extends Controller
             'email'      => 'required|email|unique:users,Email',
             'phone'      => 'nullable|string|max:30',
             'password'   => 'required|string|min:4',
-            'roleid'     => 'required|integer|in:1,2,3,4,5',
+            'roleid'     => 'required|integer|in:1,2,3,4,5,6,7',
             'date_of_birth' => 'nullable|date',
             'family_code' => 'nullable|string|max:64',
             'family_code_family' => 'nullable|string|max:64',

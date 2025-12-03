@@ -190,11 +190,15 @@
                 <li><a href="/home" class="btn-important">Home</a></li>
                 <li><a href="/profile">Profile</a></li>
                 <li><a href="/logout" class="btn-important">Logout</a></li>
+                <li><a href="/roster" class="btn-important">Roster</a></li>
             @endauth
+
+            @important
+                <li><a href="/NewRoster" class="btn-important">New Roster</a></li>
 
             @guest
                 <li><a href="/login" class="btn-important">Login</a></li>
-                <li><a href="/signin">Register</a></li>
+                <li><a href="/register">Register</a></li>
             @endguest
         </ul>
     </nav>

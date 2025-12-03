@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Roster;
+use Carbon\Carbon;
 
 class RosterController extends Controller
 {
@@ -12,18 +13,19 @@ class RosterController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        $date = $request->input('date') ?? now()->toDateString();
+{
+    $date = $request->query('date', Carbon::today()->toDateString());
 
-        $roster = Roster::whereDate('Date', $date)->first();
+    $roster = Roster::query()
+        ->whereDate('date', $date)
+        ->with(['supervisor','doctor','cg1','cg2','cg3','cg4'])
+        ->first();
 
-        return view("Roster", [
-            'date' => $date,
-            'roster' => $roster,
-        ]);
-        
-    }
-
+    return view('Roster', [
+        'date' => $date,
+        'roster' => $roster,
+    ]);
+}
     /**
      * Store a newly created resource in storage.
      */

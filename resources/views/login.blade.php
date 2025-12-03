@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="{{ asset('css/towerhealth.css') }}">
+    <link rel="stylesheet" href="css/towerhealth.css">
 </head>
 <body>
 

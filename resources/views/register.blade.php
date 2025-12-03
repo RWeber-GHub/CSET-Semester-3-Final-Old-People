@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
-    <link rel="stylesheet" href="{{ asset('resources/css/towerhealth.css') }}">
+    <link rel="stylesheet" href="css/towerhealth.css">
 </head>
 <body>
 
@@ -72,6 +72,7 @@
                         <option value="3" {{ old('roleid') == '3' ? 'selected' : '' }}>Patient</option>
                         <option value="4" {{ old('roleid') == '4' ? 'selected' : '' }}>Caregiver</option>
                         <option value="5" {{ old('roleid') == '5' ? 'selected' : '' }}>Family Member</option>
+                        <option value="6" {{ old('roleid') == '7' ? 'selected' : '' }}>Supervisor</option>
                     </select>
                 </div>
 

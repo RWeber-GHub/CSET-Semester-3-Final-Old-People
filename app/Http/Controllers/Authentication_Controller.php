@@ -112,6 +112,19 @@ class Authentication_controller extends Controller
         $user->User_Group = $familyCode ?? null;
 
         $user->save();
+        
+        // Create Patient if selected role is patient
+        if ((int)$data['roleid'] === 3){
+            DB::table('patients')->insert([
+                'UserID'         => $user->UserID,
+                'Admission_Date' => now(),
+                'FamilyCode'     => $familyCode,
+                'Relation'       => $user->Emergency_Contact_Relation,  
+                'Amount_Due'     => 0,       
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+        }
 
         return redirect('/login')->with('success', 'Account created! Wait for admin approval.');
     }
@@ -125,10 +138,16 @@ class Authentication_controller extends Controller
 
     // Admin-only user approval page
     public function adminUserView()
-    {
-        $pendingUsers = DB::table('users')->where('Approved', 0)->get();
-        return view('AdminUsers', ['pendingUsers' => $pendingUsers]);
-    }
+{
+    $pendingUsers = DB::table('users')->where('Approved', 0)->get();
+    $pendingCount = $pendingUsers->count();
+
+    return view('admin_home', [
+        'pendingUsers' => $pendingUsers,
+        'pendingCount' => $pendingCount
+    ]);
+}
+
 
     // Approve user
     public function approveUser($id)

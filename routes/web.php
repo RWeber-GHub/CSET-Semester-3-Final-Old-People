@@ -8,15 +8,16 @@ use App\Http\Controllers\RosterController;
 use App\Http\Controllers\New_Roster_Controller;
 
 // ---------------- Home ----------------
-
 Route::get('/', function () {
     return view('Home');
 });
 
 // Patient Home
-Route::get('/patient_home', [PatientsController::class, 'index']);
+Route::get('/patient_home', [PatientsController::class, 'index'])
+    ->name('patient.home');
 
-
+Route::post('/patient/{patient}/prescription', [PatientsController::class, 'get_prescription'])
+    ->name('patient.prescription');
 // ---------------- Authentication Routes ----------------
 
 // Show login page
@@ -40,27 +41,35 @@ Route::post('/register', [Authentication_controller::class, 'register'])
     ->name('register.submit');
 
 
-// ---------------- Admin View (ISeeAll Middleware) ----------------
+// ---------------- Admin Pages (Protected by ISeeAll Middleware) ----------------
 
-// Show list of users waiting approval
+// Admin Home Dashboard
+Route::get('/admin_home', function () {
+    return view('admin_home');
+})->middleware('ISeeAll')->name('admin.home');
+
+// Show list of users waiting for approval
 Route::get('/admin/users', [Authentication_controller::class, 'adminUserView'])
     ->middleware('ISeeAll')
     ->name('admin.users');
 
-// Approve a user
+// Approve user
 Route::post('/admin/users/approve/{id}', [Authentication_controller::class, 'approveUser'])
     ->middleware('ISeeAll')
-    ->name('admin.users.approve');
+    ->name('admin.user.approve');
 
-// Delete a user
+// Delete user
 Route::delete('/admin/users/delete/{id}', [Authentication_controller::class, 'deleteUser'])
     ->middleware('ISeeAll')
-    ->name('admin.users.delete');
+    ->name('admin.user.delete');
 
 
 // ---------------- Roster ----------------
 
-Route::get('/roster', [RosterController::class, 'index'])->name('roster.index');
+Route::get('/roster', [RosterController::class, 'index'])
+    ->name('roster.index');
 
-Route::get('/new-roster', [New_Roster_Controller::class, 'index'])->name('roster.new')->middleware('auth','can:manage-roster');
-Route::post('/new-roster', [New_Roster_Controller::class, 'store'])->name('roster.store')->middleware('auth','can:manage-roster');
+Route::get('/new-roster', [New_Roster_Controller::class, 'index'])->name('newRoster.index');
+
+Route::post('/new-roster', [New_Roster_Controller::class, 'store'])->name('newRoster.store');
+

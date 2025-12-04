@@ -14,18 +14,28 @@ class RosterController extends Controller
      */
     public function index(Request $request)
 {
-    $date = $request->query('date', Carbon::today()->toDateString());
+    // Date from query string: /roster?date=2025-01-01
+    $date = $request->query('date');
 
-    $roster = Roster::query()
-        ->whereDate('date', $date)
-        ->with(['supervisor','doctor','cg1','cg2','cg3','cg4'])
-        ->first();
+    // Load roster for the date (or null if not created yet)
+    $roster = null;
+    if ($date) {
+        $roster = \App\Models\Roster::with([
+            'supervisor',
+            'doctor',
+            'cg1',
+            'cg2',
+            'cg3',
+            'cg4'
+        ])->where('date', $date)->first();
+    }
 
     return view('Roster', [
-        'date' => $date,
+        'date'   => $date,
         'roster' => $roster,
     ]);
 }
+
     /**
      * Store a newly created resource in storage.
      */

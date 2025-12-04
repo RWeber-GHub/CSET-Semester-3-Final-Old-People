@@ -3,17 +3,22 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
 
 class ISeeAll
 {
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-        if (!Session::has('user') || Session::get('user.UserID') != 10) {
-            return redirect('/login');
+        // If no session, force login
+        if (!session()->has('roleid')) {
+            return redirect('/login')->withErrors(['Please log in first.']);
+        }
+
+        // Compare as string to avoid type mismatch issues
+        if ((string) session('roleid') !== "1") {
+            return redirect('/')->withErrors(['Unauthorized access.']);
         }
 
         return $next($request);
     }
 }
-

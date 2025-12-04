@@ -1,113 +1,141 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Roster</title>
 
-@section('title','New Roster')
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f5;
+            margin: 0;
+            padding: 0;
+        }
 
-@section('content')
-    <div class="page-header">New / Edit Roster</div>
+        .page-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.12);
+        }
 
-    <form method="POST" action="{{ route('roster.store') }}">
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2f6fed;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #1c49c7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+    <h1>Create New Roster</h1>
+
+    <form action="{{ route('newRoster.store') }}" method="POST">
         @csrf
 
-        <label>Select Date</label>
-        <input type="date" name="date" value="{{ old('date', $date) }}" required>
+        <label for="date">Roster Date</label>
+        <input type="date" name="date" required>
 
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px;">
-            <div>
-                <label>Supervisor</label>
-                <select name="supervisor_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->supervisor_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <select name="supervisor_id">
+            <option value="">-- Select Supervisor --</option>
+            @foreach ($supervisors as $s)
+                <option value="{{ $s->UserID }}">
+                    {{ $s->First_Name }} {{ $s->Last_Name }}
+                </option>
+            @endforeach
+        </select>
 
-            <div>
-                <label>Doctor</label>
-                <select name="doctor_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->doctor_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
 
-            <div>
-                <label>Caregiver 1</label>
-                <select name="caregiver1_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->caregiver1_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
 
-            <div>
-                <label>Caregiver 2</label>
-                <select name="caregiver2_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->caregiver2_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <select name="doctor_id" required>
+            <option value="">Select Doctor</option>
+            @foreach($doctors as $d)
+                <option value="{{ $d->UserID }}">
+                    {{ $d->First_Name }} {{ $d->Last_Name }}
+                </option>
+            @endforeach
+        </select>
 
-            <div>
-                <label>Caregiver 3</label>
-                <select name="caregiver3_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->caregiver3_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
 
-            <div>
-                <label>Caregiver 4</label>
-                <select name="caregiver4_id">
-                    <option value="">-- none --</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->UserID }}" {{ optional($roster)->caregiver4_id == $u->UserID ? 'selected' : '' }}>
-                            {{ $u->Last_Name }}, {{ $u->First_Name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <select name="cg1_id" required>
+            <option value="">Select Caregiver 1</option>
+            @foreach($caregivers as $c)
+                <option value="{{ $c->UserID }}">
+                    {{ $c->First_Name }} {{ $c->Last_Name }}
+                </option>
+            @endforeach
+        </select>
 
-            <div>
-                <label>Patient Group 1</label>
-                <input type="text" name="patient_group1" value="{{ old('patient_group1', optional($roster)->patient_group1) }}">
-            </div>
 
-            <div>
-                <label>Patient Group 2</label>
-                <input type="text" name="patient_group2" value="{{ old('patient_group2', optional($roster)->patient_group2) }}">
-            </div>
+        <select name="cg2_id">
+            <option value="">Select Caregiver 2</option>
+            @foreach($caregivers as $c)
+                <option value="{{ $c->UserID }}">
+                    {{ $c->First_Name }} {{ $c->Last_Name }}
+                </option>
+            @endforeach
+        </select>
 
-            <div>
-                <label>Patient Group 3</label>
-                <input type="text" name="patient_group3" value="{{ old('patient_group3', optional($roster)->patient_group3) }}">
-            </div>
 
-            <div>
-                <label>Patient Group 4</label>
-                <input type="text" name="patient_group4" value="{{ old('patient_group4', optional($roster)->patient_group4) }}">
-            </div>
-        </div>
+        <select name="cg3_id">
+            <option value="">Select Caregiver 3</option>
+            @foreach($caregivers as $c)
+                <option value="{{ $c->UserID }}">
+                    {{ $c->First_Name }} {{ $c->Last_Name }}
+                </option>
+            @endforeach
+        </select>
 
-        <div style="margin-top:18px;">
-            <button class="btn btn-success" type="submit">Save Roster</button>
-            <a href="{{ route('roster.index', ['date' => $date]) }}" class="btn btn-dark" style="margin-left:8px;">Cancel</a>
-        </div>
+        
+        <select name="cg4_id">
+            <option value="">Select Caregiver 4</option>
+            @foreach($caregivers as $c)
+                <option value="{{ $c->UserID }}">
+                    {{ $c->First_Name }} {{ $c->Last_Name }}
+                </option>
+            @endforeach
+        </select>
+
+
+        <button type="submit">Create Roster</button>
+
     </form>
-@endsection
+</div>
+
+</body>
+</html>

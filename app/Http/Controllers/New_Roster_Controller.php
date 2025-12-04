@@ -3,48 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Roster;
 use App\Models\Users;
-use Carbon\Carbon;
+use App\Models\Roster;
 
 class New_Roster_Controller extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $date = $request->query('date', Carbon::today()->toDateString());
+        $supervisors = Users::where('RoleID', '6')->get();
+        $doctors     = Users::where('RoleID', '2')->get();
+        $caregivers  = Users::where('RoleID', '4')->get();
 
-        $roster = Roster::query()
-                        ->whereDate('date', $date)
-                        ->with(['supervisor','doctor','cg1','cg2','cg3','cg4'])
-                        ->first();
-
-        $users = Users::orderBy('Last_Name')->get();
-
-        return view('NewRoster', compact('date','roster','users'));
+        return view('NewRoster', [
+            'supervisors' => $supervisors,
+            'doctors' => $doctors,
+            'caregivers' => $caregivers,
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'date' => 'required|date',
-            'supervisor_id' => 'nullable|exists:users,UserID',
-            'doctor_id' => 'nullable|exists:users,UserID',
-            'caregiver1_id' => 'nullable|exists:users,UserID',
-            'caregiver2_id' => 'nullable|exists:users,UserID',
-            'caregiver3_id' => 'nullable|exists:users,UserID',
-            'caregiver4_id' => 'nullable|exists:users,UserID',
-            'patient_group1' => 'nullable|string|max:50',
-            'patient_group2' => 'nullable|string|max:50',
-            'patient_group3' => 'nullable|string|max:50',
-            'patient_group4' => 'nullable|string|max:50',
-        ]);
+         Roster::create([
+        'Date'         => $request->date,
+        'SupervisorID' => $request->supervisor_id,
+        'DoctorID'     => $request->doctor_id,
+        'Caregiver1_ID' => $request->cg1_id,
+        'Caregiver2_ID' => $request->cg2_id,
+        'Caregiver3_ID' => $request->cg3_id,
+        'Caregiver4_ID' => $request->cg4_id,
+    ]);
 
-        Roster::updateOrCreate(
-            ['date' => $data['date']],
-            $data
-        );
-
-        return redirect()->route('roster.index', ['date' => $data['date']])
-                         ->with('success', 'Roster saved.');
+    return redirect('/roster?date=' . $request->date)
+           ->with('success', 'Roster created successfully!');
     }
 }

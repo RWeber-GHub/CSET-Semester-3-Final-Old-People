@@ -9,17 +9,13 @@ class Roster extends Model
     protected $table = 'roster';
 
     protected $fillable = [
-        'date',
-        'supervisor_id',
-        'doctor_id',
-        'caregiver1_id',
-        'caregiver2_id',
-        'caregiver3_id',
-        'caregiver4_id',
-        'patient_group1',
-        'patient_group2',
-        'patient_group3',
-        'patient_group4',
+        'Date',
+        'SupervisorID',
+        'DoctorID',
+        'Caregiver1_ID',
+        'Caregiver2_ID',
+        'Caregiver3_ID',
+        'Caregiver4_ID',
     ];
 
     protected $casts = [
@@ -27,10 +23,34 @@ class Roster extends Model
     ];
 
     // Relationships to User model (adjust User primaryKey if necessary)
-    public function supervisor() { return $this->belongsTo(\App\Models\Users::class, 'supervisor_id', 'UserID'); }
-    public function doctor()     { return $this->belongsTo(\App\Models\Users::class, 'doctor_id', 'UserID'); }
-    public function cg1()        { return $this->belongsTo(\App\Models\Users::class, 'caregiver1_id', 'UserID'); }
-    public function cg2()        { return $this->belongsTo(\App\Models\Users::class, 'caregiver2_id', 'UserID'); }
-    public function cg3()        { return $this->belongsTo(\App\Models\Users::class, 'caregiver3_id', 'UserID'); }
-    public function cg4()        { return $this->belongsTo(\App\Models\Users::class, 'caregiver4_id', 'UserID'); }
+public function supervisor()
+{
+    return $this->belongsTo(Users::class, 'SupervisorID');
+}
+
+public function doctor()
+{
+    return $this->belongsTo(Users::class, 'DoctorID');
+}
+
+public function cg1()
+{
+    return $this->belongsTo(Users::class, 'CG1_ID');
+}
+
+public function cg2()
+{
+    return $this->belongsTo(Users::class, 'CG2_ID');
+}
+
+public function cg3()
+{
+    return $this->belongsTo(Users::class, 'CG3_ID');
+}
+
+public function cg4()
+{
+    return $this->belongsTo(Users::class, 'CG4_ID');
+}
+
 }

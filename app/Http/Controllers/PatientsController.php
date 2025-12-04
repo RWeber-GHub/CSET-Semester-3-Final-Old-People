@@ -22,7 +22,6 @@ class PatientsController extends Controller
 
         $prescription = $patient->prescriptions()->whereDate('Date', $today)->first();
         
-        // Only checks if today
         $patient_home_activity = $patient->activity()->whereDate('Date', $today)->first();
 
         return view('PatientsHome', [
@@ -33,7 +32,7 @@ class PatientsController extends Controller
         ]);
     }
 
-    public function get_prescription(Request $request, Patients $patient)
+    public function prescription(Request $request, Patients $patient)
     {
         $validated = $request->validate([
             'date' => 'required|date',

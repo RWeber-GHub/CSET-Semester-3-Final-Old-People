@@ -1,65 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="css/towerhealth.css">
-    <title>Admin - Pending Users</title>
+    <meta charset="UTF-8">
+    <title>Pending User Approvals</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        body { font-family: Arial; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        button { padding: 6px 12px; cursor: pointer; }
-        .approve-btn { background-color: #4CAF50; color: white; border: none; }
-        .delete-btn { background-color: #e74c3c; color: white; border: none; }
+        body {
+            background: #f4f6f9;
+        }
+        .card {
+            border-radius: 12px;
+        }
+        .table th {
+            background: #343a40;
+            color: white;
+        }
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
 
-<h2>Pending User Approvals</h2>
+<!-- NAV -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 mb-4">
+    <a class="navbar-brand" href="/admin_home">Admin Panel</a>
 
-@if(session('success'))
-    <div style="color: green;">{{ session('success') }}</div>
-@endif
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a href="/admin_home" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link text-danger">Logout</a></li>
+        </ul>
+    </div>
+</nav>
 
-@if($pendingUsers->isEmpty())
-    <p>No pending users.</p>
-@else
-    <table>
-        <tr>
-            <th>UserID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>RoleID</th>
-            <th>Actions</th>
-        </tr>
+<div class="container">
 
-        @foreach($pendingUsers as $user)
-        <tr>
-            <td>{{ $user->UserID }}</td>
-            <td>{{ $user->First_Name }} {{ $user->Last_Name }}</td>
-            <td>{{ $user->Email }}</td>
-            <td>{{ $user->RoleID }}</td>
-            <td>
+    <h2 class="mb-4 fw-bold">Pending User Approvals</h2>
 
-                {{-- Approve Form --}}
-                <form action="{{ route('admin.users.approve', $user->UserID) }}" method="POST" style="display:inline;">
-                    @csrf
-                    <button class="approve-btn">Approve</button>
-                </form>
+    {{-- Success Message --}}
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-                {{-- Delete Form --}}
-                <form action="{{ route('admin.users.delete', $user->UserID) }}" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button class="delete-btn">Delete</button>
-                </form>
+    {{-- No Pending Users --}}
+    @if ($pendingUsers->isEmpty())
+        <div class="alert alert-info">There are no users waiting for approval.</div>
+    @else
 
-            </td>
-        </tr>
-        @endforeach
+        <div class="card shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Date of Birth</th>
+                            <th>Emergency Contact</th>
+                            <th>Added On</th>
+                            <th style="width: 180px;">Actions</th>
+                        </tr>
+                    </thead>
 
-    </table>
-@endif
+                    <tbody>
+                        @foreach ($pendingUsers as $user)
+                            <tr>
+                                <td>{{ $user->First_Name }} {{ $user->Last_Name }}</td>
+                                <td>{{ $user->Email }}</td>
+                                <td>{{ $user->Phone }}</td>
+
+                                <td>
+                                    @switch($user->RoleID)
+                                        @case(1) Admin @break
+                                        @case(2) Doctor @break
+                                        @case(3) Patient @break
+                                        @case(4) Caregiver @break
+                                        @case(5) Family Member @break
+                                        @default Unknown
+                                    @endswitch
+                                </td>
+
+                                <td>{{ $user->Date_of_Birth ?? '—' }}</td>
+
+                                <td>
+                                    @if ($user->Emergency_Contact)
+                                        {{ $user->Emergency_Contact }}
+                                        <br>
+                                        <small class="text-muted">{{ $user->Emergency_Contact_Relation }}</small>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+
+                                <td>
+                                    {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
+                                </td>
+
+                                <td>
+
+                                    <!-- Approve Button -->
+                                    <button class="btn btn-approve btn-sm w-100 mb-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#approveModal{{ $user->UserID }}">
+                                        Approve
+                                    </button>
+
+                                    <!-- Delete Button -->
+                                    <button class="btn btn-delete btn-sm w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ $user->UserID }}">
+                                        Delete
+                                    </button>
+
+                                </td>
+                            </tr>
+
+                            <!-- Approve Modal -->
+                            <div class="modal fade" id="approveModal{{ $user->UserID }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Approve User</h5>
+                                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            Approve <strong>{{ $user->First_Name }} {{ $user->Last_Name }}</strong>?
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                                            <form action="/admin/users/approve/{{ $user->UserID }}" method="POST">
+
+
+                                                @csrf
+                                                <button class="btn btn-approve">Approve</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteModal{{ $user->UserID }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-danger">Delete User</h5>
+                                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            Are you sure you want to delete
+                                            <strong>{{ $user->First_Name }} {{ $user->Last_Name }}</strong>?
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                                            <form action="/admin/users/delete/{{ $user->UserID }}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-delete">Delete</button>
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        @endforeach
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    @endif
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

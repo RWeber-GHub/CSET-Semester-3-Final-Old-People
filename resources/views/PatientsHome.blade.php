@@ -54,17 +54,12 @@
         }
         
     </style>
-    <script>
-        if (!RoleController::role()) {
-            return redirect('/home'); 
-        }   
-    </script>
 </head>
 <body>
     <h1>Patient ID: {{ $patient->PatientID }}</h1>
     <!-- get name from user? -->
     <h2>{{ $patient->Name }}</h2>
-    <form action="" class="form-container">
+    <form action="{{ route('patient.prescription', $patient->PatientID) }}" class="form-container">
         <input type="submit" value="Date" class="btn">
         <input type="text" placeholder="{{ $date }}" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'">
     </form>

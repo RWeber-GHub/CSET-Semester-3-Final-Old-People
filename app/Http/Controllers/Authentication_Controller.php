@@ -126,6 +126,7 @@ class Authentication_controller extends Controller
             ]);
         }
 
+
         return redirect('/login')->with('success', 'Account created! Wait for admin approval.');
     }
 
@@ -140,11 +141,9 @@ class Authentication_controller extends Controller
     public function adminUserView()
 {
     $pendingUsers = DB::table('users')->where('Approved', 0)->get();
-    $pendingCount = $pendingUsers->count();
-
+    
     return view('admin_home', [
-        'pendingUsers' => $pendingUsers,
-        'pendingCount' => $pendingCount
+        'pendingUsers' => $pendingUsers
     ]);
 }
 

@@ -1,59 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roster</title>
 
-@section('title', 'Roster')
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f5;
+            margin: 0;
+            padding: 0;
+        }
 
-@section('content')
-    <div class="page-header">Roster</div>
+        .page-container {
+            width: 95%;
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.12);
+        }
 
-    <form method="GET" action="{{ route('roster.index') }}" 
-          style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-        <label style="margin:0;">Date</label>
-        <input type="date" name="date" value="{{ old('date', $date) }}">
-        <button type="submit" class="btn btn-primary">View</button>
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
 
-        @can('manage-roster')
-            <a href="{{ route('roster.new', ['date' => $date]) }}"
-               class="btn btn-dark" style="margin-left:8px;">
-                New/Edit Roster
-            </a>
-        @endcan
-    </form>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    @if(!$roster)
-        <p style="color:#888;">No roster found for this date.</p>
-    @else
+        th {
+            background: #2f6fed;
+            color: white;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            background: #fafafa;
+            border: 1px solid #ccc;
+        }
+
+        tr:nth-child(even) td {
+            background: #f0f4ff;
+        }
+
+        .back-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto 0;
+            padding: 12px;
+            text-align: center;
+            background: #2f6fed;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+
+    <h1>Roster for {{ $date }}</h1>
+
+    @if ($roster)
     <table>
-        <thead>
-            <tr>
-                <th>Supervisor</th>
-                <th>Doctor</th>
-                <th>Caregiver 1</th>
-                <th>Caregiver 2</th>
-                <th>Caregiver 3</th>
-                <th>Caregiver 4</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ optional($roster->supervisor)->First_Name ?? '—' }} {{ optional($roster->supervisor)->Last_Name }}</td>
-                <td>{{ optional($roster->doctor)->First_Name ?? '—' }} {{ optional($roster->doctor)->Last_Name }}</td>
-                <td>{{ optional($roster->cg1)->First_Name ?? '—' }} {{ optional($roster->cg1)->Last_Name }}</td>
-                <td>{{ optional($roster->cg2)->First_Name ?? '—' }} {{ optional($roster->cg2)->Last_Name }}</td>
-                <td>{{ optional($roster->cg3)->First_Name ?? '—' }} {{ optional($roster->cg3)->Last_Name }}</td>
-                <td>{{ optional($roster->cg4)->First_Name ?? '—' }} {{ optional($roster->cg4)->Last_Name }}</td>
-            </tr>
+        <tr>
+            <th>Supervisor</th>
+            <th>Doctor</th>
+            <th>Caregivers</th>
+        </tr>
 
-            <tr>
-                <td></td>
-                <td></td>
-                <td>{{ $roster->patient_group1 ?? '' }}</td>
-                <td>{{ $roster->patient_group2 ?? '' }}</td>
-                <td>{{ $roster->patient_group3 ?? '' }}</td>
-                <td>{{ $roster->patient_group4 ?? '' }}</td>
-            </tr>
-        </tbody>
+        <tr>
+            <td>{{ $roster->SupervisorName }}</td>
+            <td>{{ $roster->DoctorName }}</td>
+            <td>
+                {{ $roster->CG1Name }}<br>
+                {{ $roster->CG2Name }}<br>
+                {{ $roster->CG3Name }}<br>
+                {{ $roster->CG4Name }}
+            </td>
+        </tr>
     </table>
+    @else
+        <p style="text-align:center; padding:20px;">No roster found for this date.</p>
     @endif
 
-    <div class="muted-note">This page is accessed by Everyone.</div>
+    <a href="/new-roster" class="back-btn">Create New Roster</a>
 
-@endsection
+</div>
+
+</body>
+</html>

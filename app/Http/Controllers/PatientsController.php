@@ -11,9 +11,23 @@ class PatientsController extends Controller
 {
     public function index()
     {
-        $id = session('user_id');
-        $patient = Patients::findOrFail($id);
-        return view('PatientsHome', compact('patient'));
+        $id = session('userid');
+
+        if (!$id) {
+            return redirect('/login')->withErrors(['Please login first.']);
+        }
+        $patient = Patients::where('UserID', $id)->firstOrFail();
+
+        $today = today()->toDateString();
+        $prescription = $patient->prescriptions()->whereDate('Date', $today)->first();
+        $patient_home_activity = $patient->activity()->whereDate('Date', $today)->first();
+
+        return view('PatientsHome', [
+            'patient' => $patient,
+            'prescription' => $prescription,
+            'patient_home_activity' => $patient_home_activity,
+            'date' => $today,
+        ]);
     }
     
     public function patient_home(Patients $patient)
@@ -32,15 +46,22 @@ class PatientsController extends Controller
         ]);
     }
 
-    public function prescription(Request $request, Patients $patient)
+    public function get_prescription(Request $request, Patients $patient)
     {
         $validated = $request->validate([
             'date' => 'required|date',
         ]);
+        $date = $validated['date'];
 
-        $prescription = $patient->prescriptions()->whereDate('date', $validated['date'])->first();
+        $prescription = $patient->prescriptions()->whereDate('Date', $date)->first();
+        $activity = $patient->activity()->whereDate('Date', $date)->first();
 
-        return $prescription;
+        return view('PatientsHome', [
+            'patient' => $patient,
+            'prescription' => $prescription,
+            'patient_home_activity' => $activity,
+            'date' => $date,
+        ]);
     }
 
     /**

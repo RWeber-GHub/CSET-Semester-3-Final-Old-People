@@ -44,9 +44,9 @@ Route::post('/register', [Authentication_controller::class, 'register'])
 // ---------------- Admin Pages (Protected by ISeeAll Middleware) ----------------
 
 // Admin Home Dashboard
-Route::get('/admin_home', function () {
-    return view('admin_home');
-})->middleware('ISeeAll')->name('admin.home');
+Route::get('/admin_home', [Authentication_controller::class, 'adminUserView'])
+    ->middleware('ISeeAll')
+    ->name('admin.home');
 
 // Show list of users waiting for approval
 Route::get('/admin/users', [Authentication_controller::class, 'adminUserView'])
